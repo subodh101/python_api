@@ -3,13 +3,13 @@ import os
 import shelve
 
 # Import the framework
-from flask_restful import Resource, Api, reqparse
 from flask import Flask, g
+from flask_restful import Resource, Api, reqparse
 
-# Create an instance of flask
+# Create an instance of Flask
 app = Flask(__name__)
 
-# Create the api
+# Create the API
 api = Api(app)
 
 def get_db():
@@ -19,7 +19,7 @@ def get_db():
     return db
 
 @app.teardown_appcontext
-def teardown_db(execption):
+def teardown_db(exception):
     db = getattr(g, '_database', None)
     if db is not None:
         db.close()
@@ -28,14 +28,15 @@ def teardown_db(execption):
 def index():
     """Present some documentation"""
 
-    # Open the Readme file
-    with open(os.path.dirname(app.root_path)+'/Readme.md', 'r') as markdown_files:
+    # Open the README file
+    with open(os.path.dirname(app.root_path) + '/README.md', 'r') as markdown_file:
 
         # Read the content of the file
-        content = markdown_files.read()
+        content = markdown_file.read()
 
-        # Conver to HTML
+        # Convert to HTML
         return markdown.markdown(content)
+
 
 class DeviceList(Resource):
     def get(self):
@@ -47,7 +48,7 @@ class DeviceList(Resource):
         for key in keys:
             devices.append(shelf[key])
 
-        return {'message': 'Success', 'date': devices}
+        return {'message': 'Success', 'data': devices}, 200
 
     def post(self):
         parser = reqparse.RequestParser()
@@ -63,23 +64,23 @@ class DeviceList(Resource):
         shelf = get_db()
         shelf[args['identifier']] = args
 
-        return {'message': "Device registered", "data": args}, 201
+        return {'message': 'Device registered', 'data': args}, 201
+
 
 class Device(Resource):
-    """docstring for Device."""
     def get(self, identifier):
         shelf = get_db()
 
-        # If the key does not exist in the data store, return a 404 error
+        # If the key does not exist in the data store, return a 404 error.
         if not (identifier in shelf):
-            return {"message": "Device not found", 'data': {}}, 404
+            return {'message': 'Device not found', 'data': {}}, 404
 
         return {'message': 'Device found', 'data': shelf[identifier]}, 200
 
-    def delete(shef, identifier):
+    def delete(self, identifier):
         shelf = get_db()
 
-        # If the key does not exist in the data store, return a 404 error
+        # If the key does not exist in the data store, return a 404 error.
         if not (identifier in shelf):
             return {'message': 'Device not found', 'data': {}}, 404
 
